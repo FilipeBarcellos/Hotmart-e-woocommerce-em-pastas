@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WooCommerce - Integrador de compras Hotmart
+ * Plugin Name: WooCommerce e Hotmart por FILIPE BARCELLOS
  * Description: Plugin para integrar as compras feitas na Hotmart com o WooCommerce.
  * Author: Filipe Barcellos
  * Version: 1.0
