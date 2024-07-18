@@ -49,4 +49,3 @@ class Hotmart_Emails {
         wp_mail($error_email, $subject, $body);
     }
 }
-}
