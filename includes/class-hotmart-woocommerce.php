@@ -1,16 +1,19 @@
 <?php
 
+/**
+ * Classe responsável pela integração com o WooCommerce.
+ */
 class Hotmart_WooCommerce {
 
     /**
-     * Cria um pedido no WooCommerce com base nos dados fornecidos.
-     * Utilizado para criar um pedido quando um novo usuário é criado após uma compra.
+     * Cria um pedido no WooCommerce para um novo usuário.
      *
      * @param array $order_data Dados do pedido.
      * @param string $first_name Primeiro nome do cliente.
      * @param string $email E-mail do cliente.
      * @param string $product_name Nome do produto comprado.
-     * @return WC_Order|WP_Error Retorna o objeto do pedido ou um erro se algo der errado.
+     * @param string $transaction_id ID da transação na Hotmart.
+     * @return WC_Order|WP_Error O objeto do pedido criado ou um objeto WP_Error em caso de erro.
      */
     public function wc_custom_create_order_hotmart($order_data, $first_name, $email, $product_name, $transaction_id) {
         $address = array(
@@ -58,11 +61,11 @@ class Hotmart_WooCommerce {
     }
 
     /**
-     * Processa um pedido para um usuário existente.
-     * Utilizado quando um usuário existente faz uma nova compra.
+     * Processa um pedido no WooCommerce para um usuário existente.
      *
-     * @param int $user_id ID do usuário.
+     * @param int $user_id ID do usuário no WordPress.
      * @param string $product_name Nome do produto comprado.
+     * @return WC_Order|WP_Error O objeto do pedido processado ou um objeto WP_Error em caso de erro.
      */
     public function wc_custom_process_order_for_existing_user($user_id, $product_name) {
         // Verifica se o produto existe
@@ -108,9 +111,9 @@ class Hotmart_WooCommerce {
     }
 
     /**
-     * Processa um reembolso ou chargeback no WooCommerce com base no número da transação da hotmart.
+     * Processa um reembolso ou chargeback no WooCommerce com base no número da transação da Hotmart.
      *
-     * @param string $transaction_id Número da transação da hotmart.
+     * @param string $transaction_id Número da transação da Hotmart.
      */
     public function wc_custom_refund_order_by_transaction_id($transaction_id) {
         // Procura por pedidos que contenham o metadado 'hotmart_transaction_id' igual ao $transaction_id.
