@@ -1,9 +1,7 @@
 <?php
-require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-functions.php';
 
-/**
- * Classe responsável pelas configurações do plugin no painel do WordPress.
- */
+require_once plugin_dir_path(dirname(__FILE__)) . 'hotmart-functions.php'; 
+
 class Hotmart_WordPress {
     
     public function __construct() {
@@ -15,8 +13,8 @@ class Hotmart_WordPress {
      * Adiciona uma página de menu ao painel de administração do WordPress para o plugin.
      */
     public function hotmart_add_admin_menu() {
-        add_menu_page('Webhook hotmart', 'Webhook hotmart', 'manage_options', 'hotmart_webhook', 'hotmart_options_page');
-        add_submenu_page('hotmart_webhook', 'Log de Erros', 'Log de Erros', 'manage_options', 'hotmart_error_log', 'hotmart_display_error_log');
+        add_menu_page('Webhook hotmart', 'Webhook hotmart', 'manage_options', 'hotmart_webhook', array($this, 'hotmart_options_page')); 
+        add_submenu_page('hotmart_webhook', 'Log de Erros', 'Log de Erros', 'manage_options', 'hotmart_error_log', array($this, 'hotmart_display_error_log'));
     }
 
     /**
@@ -25,7 +23,7 @@ class Hotmart_WordPress {
     public function hotmart_options_page() {
         // Verifica se o usuário deseja limpar o log e tem a permissão para isso
         if (isset($_POST['hotmart_clear_log']) && check_admin_referer('hotmart_clear_log_action', 'hotmart_clear_log_nonce')) {
-            $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(__FILE__) . 'hotmart.log');
+            $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log');
             file_put_contents($log_file_path, '');
             echo "<div class='updated'><p>Log limpo.</p></div>";
         }
@@ -56,14 +54,15 @@ class Hotmart_WordPress {
     public function hotmart_register_settings() {
         register_setting('hotmart_logger_options', 'hotmart_logging_enabled');
         register_setting('hotmart_logger_options', 'hotmart_log_file_path');
-        add_settings_section('hotmart_logger_main', 'Configurações principais', 'hotmart_logger_section_text', 'hotmart_logger');
-        add_settings_field('hotmart_logging_enabled', 'Habilitar registro', 'hotmart_logging_enabled_field', 'hotmart_logger', 'hotmart_logger_main');
-        add_settings_field('hotmart_log_file_path', 'Caminho do arquivo de log', 'hotmart_log_file_path_field', 'hotmart_logger', 'hotmart_logger_main');
-        add_settings_field('hotmart_log_contents', 'Conteúdo do Log', 'hotmart_log_contents_field', 'hotmart_logger', 'hotmart_logger_main');
+        add_settings_section('hotmart_logger_main', 'Configurações principais', array($this, 'hotmart_logger_section_text'), 'hotmart_logger');
+        add_settings_field('hotmart_logging_enabled', 'Habilitar registro', array($this, 'hotmart_logging_enabled_field'), 'hotmart_logger', 'hotmart_logger_main');
+        add_settings_field('hotmart_log_file_path', 'Caminho do arquivo de log', array($this, 'hotmart_log_file_path_field'), 'hotmart_logger', 'hotmart_logger_main');
+        add_settings_field('hotmart_log_contents', 'Conteúdo do Log', array($this, 'hotmart_log_contents_field'), 'hotmart_logger', 'hotmart_logger_main');
         register_setting('hotmart_logger_options', 'hotmart_log_raw_data');
-        add_settings_field('hotmart_log_raw_data', 'Registrar Dados Brutos', 'hotmart_log_raw_data_field', 'hotmart_logger', 'hotmart_logger_main');
+        add_settings_field('hotmart_log_raw_data', 'Registrar Dados Brutos', array($this, 'hotmart_log_raw_data_field'), 'hotmart_logger', 'hotmart_logger_main');
         register_setting('hotmart_logger_options', 'hotmart_error_email');
-        add_settings_field('hotmart_error_email', 'E-mail para Notificações de Erro', 'hotmart_error_email_field', 'hotmart_logger', 'hotmart_logger_main');
+        add_settings_field('hotmart_error_email', 'E-mail para Notificações de Erro', array($this, 'hotmart_error_email_field'), 'hotmart_logger', 'hotmart_logger_main');
+
     }
 
     /**
@@ -77,7 +76,7 @@ class Hotmart_WordPress {
      * Campo para definir o caminho do arquivo de log na página de configurações.
      */
     public function hotmart_log_file_path_field() {
-        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log'); // Corrigido o caminho do arquivo de log
+        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log');
         echo "<input id='hotmart_log_file_path' name='hotmart_log_file_path' type='text' value='" . esc_attr($log_file_path) . "' />";
     }
 
@@ -85,13 +84,14 @@ class Hotmart_WordPress {
      * Campo para exibir o conteúdo do arquivo de log na página de configurações.
      */
     public function hotmart_log_contents_field() {
-        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log'); // Corrigido o caminho do arquivo de log
+        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log');
         if (file_exists($log_file_path)) {
             echo "<textarea readonly rows='10' cols='70'>" . esc_textarea(file_get_contents($log_file_path)) . "</textarea>";
         } else {
             echo "<p>Arquivo de log não encontrado. Verifique o caminho ou as permissões.</p>";
         }
     }
+
     /**
      * Campo para habilitar ou desabilitar o registro de log na página de configurações.
      */
@@ -120,7 +120,7 @@ class Hotmart_WordPress {
      * Função para exibir o log de erros.
      */
     public function hotmart_display_error_log() {
-        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(__FILE__) . 'hotmart.log');
+        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log');
         if (file_exists($log_file_path)) {
             echo "<h2>Log de Erros</h2>";
             echo "<textarea readonly rows='20' cols='100'>" . esc_textarea(file_get_contents($log_file_path)) . "</textarea>";
