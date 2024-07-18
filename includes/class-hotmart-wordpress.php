@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Classe responsável pelas configurações do plugin no painel do WordPress.
+ */
 class Hotmart_WordPress {
     
     public function __construct() {
