@@ -1,6 +1,6 @@
 <?php
 
-require_once plugin_dir_path(dirname(__FILE__)) . 'hotmart-functions.php'; // Inclusão do arquivo de funções auxiliares
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-functions.php';
 
 /**
  * Classe responsável por enviar e-mails relacionados às compras da Hotmart.
