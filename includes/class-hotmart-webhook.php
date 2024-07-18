@@ -1,14 +1,18 @@
 <?php
-
+/**
+ * Classe responsável por lidar com o recebimento e processamento de webhooks da Hotmart.
+ */
 class Hotmart_Webhook {
-
+    /**
+     * Construtor da classe.
+     * Registra a ação para criar o endpoint do webhook quando a API REST do WordPress for inicializada.
+     */
     public function __construct() {
         add_action('rest_api_init', array($this, 'register_endpoint'));
     }
 
     /**
-     * Registra um endpoint da API REST para o webhook da hotmart.
-     * Este endpoint será chamado para processar dados recebidos via POST.
+     * Registra o endpoint da API REST para receber os webhooks da Hotmart.
      */
     public function register_endpoint() {
         register_rest_route('hotmart-webhook/v1', '/process/', array(
@@ -19,8 +23,10 @@ class Hotmart_Webhook {
     }
 
     /**
-     * A função de callback que é chamada quando o endpoint do webhook é atingido.
-     * Processa os dados recebidos e executa ações com base neles.
+     * Função de callback que processa os dados recebidos no webhook da Hotmart.
+     *
+     * @param WP_REST_Request $request Objeto da requisição do webhook.
+     * @return WP_REST_Response Resposta da API REST.
      */
     public function hotmart_webhook_callback(WP_REST_Request $request) {
         // Log dos dados brutos recebidos
