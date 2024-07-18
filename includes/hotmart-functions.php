@@ -2,7 +2,6 @@
 
 /**
  * Registra mensagens de erro em um arquivo de log se o registro estiver habilitado nas opções do plugin.
- * Agora inclui a capacidade de registrar contexto extra, como IDs de transação ou detalhes do usuário.
  *
  * @param string $message Mensagem de erro para registrar.
  * @param bool $log_raw_data Se deve registrar dados brutos.
@@ -18,7 +17,7 @@ function hotmart_log_error($message, $log_raw_data = false, $is_critical = false
         if (!$log_file_path) {
             $log_file_path = plugin_dir_path(__FILE__) . 'hotmart.log';
         }
-      
+
         $date = date("Y-m-d H:i:s");
         $log_entry = sprintf("[%s] %s", $date, is_array($message) || is_object($message) ? print_r($message, true) : $message);
 
@@ -29,11 +28,11 @@ function hotmart_log_error($message, $log_raw_data = false, $is_critical = false
 
         $log_entry .= "\n";
         error_log($log_entry, 3, $log_file_path);
-      
+
         if ($is_critical) {
-            $hotmart_emails = new Hotmart_Emails();
-            $hotmart_emails->hotmart_send_error_email($message); // Chama a função para enviar o e-mail
-        }   
+            $hotmart_emails = new Hotmart_Emails(); // Cria uma instância da classe Hotmart_Emails
+            $hotmart_emails->hotmart_send_error_email($message); // Envia o e-mail de erro
+        }
     }
 }
 
