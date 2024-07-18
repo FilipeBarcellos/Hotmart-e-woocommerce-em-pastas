@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Classe responsável por lidar com o recebimento e processamento de webhooks da Hotmart.
  */
