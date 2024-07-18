@@ -151,7 +151,7 @@ public function hotmart_log_file_path_field() {
             error_log($message, 3, $log_file);
 
     // Chamar a função de envio de e-mail
-    hotmart_send_error_email_webhook($error_message, $error_data);
+    hotmart_send_error_email($error_message, $error_data);
         }
     }
 }
