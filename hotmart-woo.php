@@ -1,4 +1,7 @@
 <?php
+
+define('HOTMART_PLUGIN_INCLUDES_DIR', plugin_dir_path(__FILE__) . 'includes/');
+
 /**
  * Plugin Name: WooCommerce e Hotmart por FILIPE BARCELLOS
  * Description: Plugin para integrar as compras feitas na Hotmart com o WooCommerce.
