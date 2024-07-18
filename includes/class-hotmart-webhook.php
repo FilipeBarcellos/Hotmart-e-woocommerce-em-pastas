@@ -1,6 +1,8 @@
 <?php
 require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-functions.php';
 require_once HOTMART_PLUGIN_INCLUDES_DIR . 'class-hotmart-wordpress.php';
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-config.php';
+
 
 /**
  * Classe responsável por lidar com o recebimento e processamento de webhooks da Hotmart.
@@ -61,8 +63,6 @@ class Hotmart_Webhook {
 
         // Definindo as variáveis $transactionId e $userDetails
         $transactionId = $data["purchase"]["transaction"];
-        $userDetails = $data["buyer"];
-
 
         // Verifica se todos os campos necessários estão presentes nos dados.
         $required_keys = ["buyer", "product", "purchase", "event"];
@@ -108,7 +108,6 @@ class Hotmart_Webhook {
 
         $nickname = $full_name; // Define o apelido do usuário.
         $product_name = sanitize_text_field($data["product"]["name"]); // Sanitiza o nome do produto.
-        $token = sanitize_text_field($request->get_header('authorization')); // Obtém o token de autorização do cabeçalho da requisição.
 
         // Processa a venda com base no status atual.
         $current_status = $data["event"];
