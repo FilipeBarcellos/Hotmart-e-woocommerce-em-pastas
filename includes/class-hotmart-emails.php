@@ -1,4 +1,7 @@
 <?php
+
+require_once plugin_dir_path(__FILE__) . 'hotmart-functions.php';
+
 /**
  * Classe responsável por enviar e-mails relacionados às compras da Hotmart.
  */
