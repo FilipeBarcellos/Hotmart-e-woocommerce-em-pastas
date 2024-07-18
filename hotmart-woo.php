@@ -14,6 +14,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-hotmart-woocommerce.php
 require_once plugin_dir_path(__FILE__) . 'includes/class-hotmart-wordpress.php';  // Lida com as configurações do plugin no painel do WordPress.
 require_once plugin_dir_path(__FILE__) . 'includes/hotmart-functions.php';
 
+$hotmart_emails = new Hotmart_Emails(); // Cria uma instância global da classe
 
 // Cria instâncias das classes do plugin.
 // Isso permite que as funções e métodos das classes sejam utilizados.
