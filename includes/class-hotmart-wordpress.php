@@ -77,7 +77,7 @@ class Hotmart_WordPress {
      * Campo para definir o caminho do arquivo de log na página de configurações.
      */
     public function hotmart_log_file_path_field() {
-        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(__FILE__) . 'hotmart.log');
+        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log'); // Corrigido o caminho do arquivo de log
         echo "<input id='hotmart_log_file_path' name='hotmart_log_file_path' type='text' value='" . esc_attr($log_file_path) . "' />";
     }
 
@@ -85,14 +85,13 @@ class Hotmart_WordPress {
      * Campo para exibir o conteúdo do arquivo de log na página de configurações.
      */
     public function hotmart_log_contents_field() {
-        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(__FILE__) . 'hotmart.log');
+        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log'); // Corrigido o caminho do arquivo de log
         if (file_exists($log_file_path)) {
             echo "<textarea readonly rows='10' cols='70'>" . esc_textarea(file_get_contents($log_file_path)) . "</textarea>";
         } else {
             echo "<p>Arquivo de log não encontrado. Verifique o caminho ou as permissões.</p>";
         }
     }
-
     /**
      * Campo para habilitar ou desabilitar o registro de log na página de configurações.
      */
