@@ -92,7 +92,7 @@ class Hotmart_Webhook {
             hotmart_log_error('Full name is empty.');
             return new WP_REST_Response(array('message' => 'Full name is empty'), 400);
         }
-        list($first_name, $last_name) = split_full_name($full_name); // Divide o nome completo em primeiro e último nome.
+        list($first_name, $last_name) = hotmart_split_full_name($full_name); // Divide o nome completo em primeiro e último nome.
         $username = str_replace(' ', '', strtolower($full_name)); // Cria um nome de usuário a partir do nome completo, em minúsculas.
 
         // Verifica se o nome de usuário já existe e ajusta se necessário.
