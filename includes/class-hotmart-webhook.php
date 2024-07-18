@@ -34,8 +34,12 @@ class Hotmart_Webhook {
             return new WP_REST_Response(array('message' => 'No data provided'), 400);
         }
 
-        // Obtém o hottok da query string da URL
-        $hottok_recebido = $request->get_param('hottok');
+    // Obtém o hottok da query string da URL, do corpo ou do cabeçalho
+    $hottok_recebido = $request->get_param('hottok');
+    if (!$hottok_recebido) {
+        $data = $request->get_json_params();
+        $hottok_recebido = isset($data['hottok']) ? $data['hottok'] : $request->get_header('hottok');
+    }
 
         // Seu hottok real (substitua pelo seu hottok)
         $hottok_esperado = HOTMART_WEBHOOK_TOKEN; // Obtém o hottok do arquivo de configuração
