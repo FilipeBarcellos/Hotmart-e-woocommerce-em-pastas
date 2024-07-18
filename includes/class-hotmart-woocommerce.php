@@ -1,4 +1,5 @@
 <?php
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-functions.php';
 
 /**
  * Classe responsável pela integração com o WooCommerce.
