@@ -1,4 +1,6 @@
 <?php
+require_once plugin_dir_path(dirname(__FILE__)) . 'hotmart-functions.php'; // Inclusão do arquivo de funções auxiliares
+
 /**
  * Classe responsável pelas configurações do plugin no painel do WordPress.
  */
