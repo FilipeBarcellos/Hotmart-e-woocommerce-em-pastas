@@ -1,7 +1,6 @@
 <?php
 require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-functions.php';
-require_once HOTMART_PLUGIN_INCLUDES_DIR . 'class-hotmart-webhook.php';
-
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'class-hotmart-wordpress.php';
 
 /**
  * Classe responsável por lidar com o recebimento e processamento de webhooks da Hotmart.
