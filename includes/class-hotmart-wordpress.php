@@ -75,10 +75,16 @@ class Hotmart_WordPress {
     /**
      * Campo para definir o caminho do arquivo de log na página de configurações.
      */
-    public function hotmart_log_file_path_field() {
-        $log_file_path = get_option('hotmart_log_file_path', plugin_dir_path(dirname(__FILE__)) . 'hotmart.log');
-        echo "<input id='hotmart_log_file_path' name='hotmart_log_file_path' type='text' value='" . esc_attr($log_file_path) . "' />";
-    }
+public function hotmart_log_file_path_field() {
+    // Obtém o diretório raiz do plugin
+    $plugin_dir = plugin_dir_path( dirname( __FILE__ ) );  
+
+    // Define o caminho completo do arquivo de log na raiz do plugin
+    $log_file_path = $plugin_dir . 'hotmart.log'; 
+
+    echo "<input id='hotmart_log_file_path' name='hotmart_log_file_path' type='text' value='" . esc_attr($log_file_path) . "' />";
+}
+
 
     /**
      * Campo para exibir o conteúdo do arquivo de log na página de configurações.
