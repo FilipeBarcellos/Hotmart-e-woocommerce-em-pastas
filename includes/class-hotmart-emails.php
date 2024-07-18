@@ -50,4 +50,12 @@ class Hotmart_Emails {
         $body = "Um erro crítico ocorreu no plugin hotmart: \n\n" . $error_message;
         wp_mail($error_email, $subject, $body);
     }
+    function hotmart_send_error_email($error_message, $error_data) {
+    $error_email = get_option('hotmart_error_email', '');
+    if (!empty($error_email)) {
+        $subject = 'Erro no Webhook Hotmart';
+        $body = "Ocorreu um erro no webhook Hotmart:\n\n$error_message\n\nDetalhes do erro:\n" . print_r($error_data, true);
+        wp_mail($error_email, $subject, $body);
+    }
+}
 }
