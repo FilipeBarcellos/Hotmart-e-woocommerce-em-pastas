@@ -128,14 +128,4 @@ class Hotmart_WordPress {
             echo "<p>Arquivo de log não encontrado. Verifique o caminho ou as permissões.</p>";
         }
     }
-
-    public function activate() {
-        // Código para ativar o plugin (opcional)
-        // Aqui você pode adicionar ações que devem ser executadas quando o plugin for ativado.
-    }
-
-    public function deactivate() {
-        // Código para desativar o plugin (opcional)
-        // Aqui você pode adicionar ações que devem ser executadas quando o plugin for desativado.
-    }
 }
