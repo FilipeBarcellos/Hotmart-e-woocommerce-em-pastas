@@ -1,6 +1,7 @@
 <?php
 
-define('HOTMART_PLUGIN_INCLUDES_DIR', plugin_dir_path(__FILE__) . 'includes/');
+// Define a constante para o caminho da pasta includes (CORRIGIDO)
+define('HOTMART_PLUGIN_INCLUDES_DIR', plugin_dir_path(__FILE__)); // Removido 'includes/'
 
 /**
  * Plugin Name: WooCommerce e Hotmart por FILIPE BARCELLOS
@@ -10,11 +11,11 @@ define('HOTMART_PLUGIN_INCLUDES_DIR', plugin_dir_path(__FILE__) . 'includes/');
  */
 
 // Inclui os arquivos das classes do plugin.
-require_once plugin_dir_path(__FILE__) . 'includes/class-hotmart-webhook.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-hotmart-emails.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-hotmart-woocommerce.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-hotmart-wordpress.php';
-require_once plugin_dir_path(__FILE__) . 'includes/hotmart-functions.php'; // Inclui o arquivo de funções auxiliares
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'includes/class-hotmart-webhook.php';
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'includes/class-hotmart-emails.php';   
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'includes/class-hotmart-woocommerce.php'; 
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'includes/class-hotmart-wordpress.php';  
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'includes/hotmart-functions.php'; 
 
 // Cria instâncias das classes do plugin.
 new Hotmart_Webhook();
