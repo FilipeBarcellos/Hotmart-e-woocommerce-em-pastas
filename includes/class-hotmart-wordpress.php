@@ -134,4 +134,24 @@ public function hotmart_log_file_path_field() {
             echo "<p>Arquivo de log não encontrado. Verifique o caminho ou as permissões.</p>";
         }
     }
+
+    // Função hotmart_log_error() adicionada
+    public function hotmart_log_error($error_message, $error_data = array()) {
+        $log_file = WP_CONTENT_DIR . '/hotmart.log';
+        $log_enabled = get_option('hotmart_logging_enabled', 'no') === 'yes';
+        $log_raw_data = get_option('hotmart_log_raw_data', 'no') === 'yes';
+
+        if ($log_enabled) {
+            $message = date('Y-m-d H:i:s') . ' - ' . $error_message . ' - ';
+            if ($log_raw_data) {
+                $message .= print_r($error_data, true) . "\n";
+            } else {
+                $message .= json_encode($error_data) . "\n";
+            }
+            error_log($message, 3, $log_file);
+
+    // Chamar a função de envio de e-mail
+    hotmart_send_error_email($error_message, $error_data);
+        }
+    }
 }
