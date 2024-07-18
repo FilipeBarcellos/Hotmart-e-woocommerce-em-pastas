@@ -1,7 +1,5 @@
 <?php
 
-require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-functions.php';
-
 /**
  * Classe responsável por enviar e-mails relacionados às compras da Hotmart.
  */
