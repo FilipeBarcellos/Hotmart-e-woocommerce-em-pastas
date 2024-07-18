@@ -27,7 +27,7 @@ class Hotmart_WooCommerce {
         if (!$product) {
             $error_message = "Product not found: " . $product_name;
             hotmart_log_error($error_message, false, true); // Marca como erro crítico
-            return new WP_Error('product_not_found', $error_message);
+            return new WP_Error('product_not_found', 'Produto da Hotmart não encontrado no WooCommerce', $error_message);
         }
 
         // Cria um novo pedido com os dados fornecidos.
