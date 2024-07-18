@@ -1,6 +1,6 @@
 <?php
 
-require_once plugin_dir_path(__FILE__) . 'hotmart-functions.php';
+require_once plugin_dir_path(dirname(__FILE__)) . 'hotmart-functions.php'; // Inclusão do arquivo de funções auxiliares
 
 /**
  * Classe responsável pela integração com o WooCommerce.
