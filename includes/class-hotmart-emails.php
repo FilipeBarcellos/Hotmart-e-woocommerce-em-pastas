@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Classe responsável por enviar e-mails relacionados às compras da Hotmart.
+ */
 class Hotmart_Emails {
 
     /**
