@@ -1,6 +1,6 @@
 <?php
 
-require_once plugin_dir_path(__FILE__) . 'hotmart-functions.php';
+require_once plugin_dir_path(dirname(__FILE__)) . 'hotmart-functions.php'; // Inclusão do arquivo de funções auxiliares
 
 /**
  * Classe responsável por lidar com o recebimento e processamento de webhooks da Hotmart.
