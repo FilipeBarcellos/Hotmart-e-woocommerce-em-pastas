@@ -1,6 +1,6 @@
 <?php
 
-require_once plugin_dir_path(dirname(__FILE__)) . 'hotmart-functions.php'; 
+require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-functions.php';
 
 class Hotmart_WordPress {
     
