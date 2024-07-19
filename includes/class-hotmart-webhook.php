@@ -33,25 +33,17 @@ class Hotmart_Webhook {
      * @param WP_REST_Request $request Objeto da requisição do webhook.
      * @return WP_REST_Response Resposta da API REST.
      */
-    public function hotmart_webhook_callback(WP_REST_Request $request) {
-        // Log dos dados brutos recebidos
-        $data_raw = $request->get_body();
-        hotmart_log_error("Dados brutos recebidos: " . $data_raw, true);
+public function hotmart_webhook_callback(WP_REST_Request $request) {
+    $data_raw = $request->get_body();
+    hotmart_log_error("Dados brutos recebidos: " . $data_raw, true);
 
-        // Obtém os dados JSON enviados para o webhook.
-        $data = $request->get_json_params(); 
-        if (!$data) {
-            hotmart_log_error('No data provided in request.', false, true, ['Request Body' => $request->get_body()]);
-            return new WP_REST_Response(array('message' => 'No data provided'), 400);
-        }
+    // Decodifica o JSON em um objeto PHP
+    $data = json_decode($data_raw);
 
-    // Validação do hottok (corrigido)
-    $hottok_recebido = $request->get_header('X-Hotmart-Hottok'); 
-
-    // Se não encontrar no cabeçalho, procura no corpo da requisição
+    // Validação do hottok 
+    $hottok_recebido = $request->get_header('X-Hotmart-Hottok');
     if (!$hottok_recebido) {
-        $data = $request->get_json_params();
-        $hottok_recebido = isset($data['hottok']) ? $data['hottok'] : null;
+        $hottok_recebido = $data->hottok; // Obtém do corpo do JSON
     }
 
     if (!$hottok_recebido || $hottok_recebido !== HOTMART_WEBHOOK_TOKEN) {
@@ -59,22 +51,28 @@ class Hotmart_Webhook {
         return new WP_REST_Response(array('message' => 'Acesso não autorizado: hottok inválido ou ausente'), 403);
     }
 
-        // Definindo as variáveis $transactionId e $userDetails
-        $transactionId = $data["purchase"]["transaction"];
+    // Extrai os dados do objeto data do webhook para uma nova variável
+    $webhookData = $data->data;
 
     // Verificação dos campos obrigatórios (corrigido)
     $required_keys = ['buyer.name', 'buyer.email', 'product.name', 'event', 'purchase.transaction'];
-    $missing_keys = []; // Array para armazenar os campos ausentes
+    $missing_keys = []; 
 
     foreach ($required_keys as $key) {
         $keys = explode('.', $key);
-        $value = $data;
-        foreach ($keys as $k) {
-            if (!isset($value[$k])) {
-                $missing_keys[] = $key; // Adiciona o campo ausente à lista
-                break; // Sai do loop interno se o campo estiver ausente
+        if (count($keys) > 1) { // Campo aninhado
+            $value = $webhookData; // Usa a nova variável $webhookData
+            foreach ($keys as $k) {
+                if (!isset($value->$k)) { 
+                    $missing_keys[] = $key;
+                    break; 
+                }
+                $value = $value->$k;
             }
-            $value = $value[$k];
+        } else { // Campo não aninhado (como event)
+            if (!isset($data->$key)) { // Verifica em $data, que ainda contém o evento
+                $missing_keys[] = $key;
+            }
         }
     }
 
@@ -85,22 +83,22 @@ class Hotmart_Webhook {
         return new WP_REST_Response(array('message' => $error_message), 400);
     }
 
-    // Extração dos dados do webhook
-    $buyer_name = isset($data['buyer']['name']) ? sanitize_text_field($data['buyer']['name']) : "Comprador não informado";
-    $email = sanitize_email($data['buyer']['email']);
-    $product_name = sanitize_text_field($data['product']['name']);
-    $event = $data['event'];
-    $transaction_id = $data['purchase']['transaction'];
+    // Extração dos dados do webhook (após a verificação dos campos obrigatórios)
+    $buyer_name = isset($webhookData->buyer->name) ? sanitize_text_field($webhookData->buyer->name) : "Comprador não informado";
+    $email = sanitize_email($webhookData->buyer->email);
+    $product_name = sanitize_text_field($webhookData->product->name); // Corrigido
+    $event = $data->event;
+    $transaction_id = $webhookData->purchase->transaction;
 
+    // Sanitiza e valida o nome completo do cliente (corrigido)
+    $full_name = sanitize_text_field($webhookData->buyer->name);
+    if (empty($full_name)) {
+        hotmart_log_error('Full name is empty.');
+        return new WP_REST_Response(array('message' => 'Full name is empty'), 400);
+    }
+    list($first_name, $last_name) = hotmart_split_full_name($full_name);
+    $username = str_replace(' ', '', strtolower($full_name));
 
-        // Sanitiza e valida o nome completo do cliente.
-        $full_name = sanitize_text_field($data["buyer"]["name"]);
-        if (empty($full_name)) {
-            hotmart_log_error('Full name is empty.');
-            return new WP_REST_Response(array('message' => 'Full name is empty'), 400);
-        }
-        list($first_name, $last_name) = hotmart_split_full_name($full_name); // Divide o nome completo em primeiro e último nome.
-        $username = str_replace(' ', '', strtolower($full_name)); // Cria um nome de usuário a partir do nome completo, em minúsculas.
 
         // Verifica se o nome de usuário já existe e ajusta se necessário.
         if (username_exists($username)) {
@@ -113,12 +111,13 @@ class Hotmart_Webhook {
             $username = $new_username;
         }
 
-        $nickname = $full_name; // Define o apelido do usuário.
-        $product_name = sanitize_text_field($data["product"]["name"]); // Sanitiza o nome do produto.
+$nickname = $full_name; // Define o apelido do usuário.
+$product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o nome do produto. (corrigido)
+
 
         // Processa a venda com base no status atual.
-        $current_status = $data["event"];
-        $transaction_id = $data["purchase"]["transaction"];
+        $current_status = $data->event; 
+        $transaction_id = $data->purchase->transaction; 
 
         if ($current_status == "PURCHASE_PROTEST" || $current_status == "PURCHASE_CHARGEBACK") {
             wc_custom_refund_order_by_transaction_id($transaction_id); // Processa o reembolso com base no número da transação.
