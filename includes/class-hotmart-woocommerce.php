@@ -117,7 +117,7 @@ class Hotmart_WooCommerce {
      *
      * @param string $transaction_id Número da transação da Hotmart.
      */
-    public function wc_custom_refund_order_by_transaction_id($transaction_id) {
+    public function wc_custom_refund_order_by_id_da_transacao($transaction_id) {
         // Procura por pedidos que contenham o metadado 'hotmart_transaction_id' igual ao $transaction_id.
         $orders = wc_get_orders(array(
             'meta_key' => 'hotmart_transaction_id',
