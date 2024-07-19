@@ -62,27 +62,36 @@ class Hotmart_Webhook {
         // Definindo as variáveis $transactionId e $userDetails
         $transactionId = $data["purchase"]["transaction"];
 
-        // Verifica se todos os campos necessários estão presentes nos dados.
-        $required_keys = ["buyer", "product", "purchase", "event"];
-        foreach ($required_keys as $key) {
-            if (!isset($data[$key])) {
-                hotmart_log_error("Missing data: $key in request.");
-                return new WP_REST_Response(array('message' => "Missing data: $key"), 400);
+    // Verificação dos campos obrigatórios (corrigido)
+    $required_keys = ['buyer.name', 'buyer.email', 'product.name', 'event', 'purchase.transaction'];
+    $missing_keys = []; // Array para armazenar os campos ausentes
+
+    foreach ($required_keys as $key) {
+        $keys = explode('.', $key);
+        $value = $data;
+        foreach ($keys as $k) {
+            if (!isset($value[$k])) {
+                $missing_keys[] = $key; // Adiciona o campo ausente à lista
+                break; // Sai do loop interno se o campo estiver ausente
             }
+            $value = $value[$k];
         }
+    }
 
-        // Valida o formato dos dados recebidos.
-        if (!is_array($data["buyer"]) || !is_array($data["product"]) || !is_array($data["purchase"])) {
-            hotmart_log_error('Invalid data format in request.');
-            return new WP_REST_Response(array('message' => 'Invalid data format'), 400);
-        }
+    // Retorna erro se houver campos ausentes
+    if (!empty($missing_keys)) {
+        $error_message = "Missing data: " . implode(', ', $missing_keys);
+        hotmart_log_error($error_message);
+        return new WP_REST_Response(array('message' => $error_message), 400);
+    }
 
-        // Valida e sanitiza o e-mail do cliente.
-        $email = sanitize_email($data["buyer"]["email"]);
-        if (!is_email($email)) {
-            hotmart_log_error('Invalid email address provided: ' . $email);
-            return new WP_REST_Response(array('message' => 'Invalid email address'), 400);
-        }
+    // Extração dos dados do webhook
+    $buyer_name = isset($data['buyer']['name']) ? sanitize_text_field($data['buyer']['name']) : "Comprador não informado";
+    $email = sanitize_email($data['buyer']['email']);
+    $product_name = sanitize_text_field($data['product']['name']);
+    $event = $data['event'];
+    $transaction_id = $data['purchase']['transaction'];
+
 
         // Sanitiza e valida o nome completo do cliente.
         $full_name = sanitize_text_field($data["buyer"]["name"]);
