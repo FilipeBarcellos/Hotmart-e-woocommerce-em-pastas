@@ -3,7 +3,6 @@ require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-functions.php';
 require_once HOTMART_PLUGIN_INCLUDES_DIR . 'class-hotmart-wordpress.php';
 require_once HOTMART_PLUGIN_INCLUDES_DIR . 'hotmart-config.php';
 
-
 /**
  * Classe responsável por lidar com o recebimento e processamento de webhooks da Hotmart.
  */
@@ -115,15 +114,30 @@ $nickname = $full_name; // Define o apelido do usuário.
 $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o nome do produto. (corrigido)
 
 
-        // Processa a venda com base no status atual.
-        $current_status = $data->event; 
-        $transaction_id = $data->purchase->transaction; 
+    // Processa a venda com base no status atual.
+    $current_status = $data->event;
 
-        if ($current_status == "PURCHASE_REFUNDED" || $current_status == "PURCHASE_CHARGEBACK") {
-    wc_custom_refund_order_by_id_da_transacao($webhookData->purchase->transaction); // Corrigido
-} elseif ($current_status == "PURCHASE_APPROVED") {
-    $user = get_user_by('email', $email); // Obtém o usuário pelo e-mail.
-    if (!$user) {
+    // Verifica se o objeto purchase existe antes de acessar suas propriedades
+    if (isset($webhookData->purchase) && is_object($webhookData->purchase)) {
+        $transaction_id = $webhookData->purchase->transaction;
+    } else {
+        $transaction_id = null;
+    }
+
+    if ($current_status == "PURCHASE_REFUNDED" || $current_status == "PURCHASE_CHARGEBACK") {
+        if ($transaction_id) { 
+            $order = wc_get_order(hotmart_get_order_id_by_transaction_id($transaction_id));
+
+            if ($order) {
+                $hotmart_woocommerce = new Hotmart_WooCommerce();
+                $hotmart_woocommerce->wc_custom_refund_order_by_id_da_transacao($transaction_id); 
+            } else {
+                hotmart_log_error("Pedido não encontrado para o ID da transação: " . $transaction_id);
+            }
+        } 
+    } elseif ($current_status == "PURCHASE_APPROVED") { // if do elseif adicionado aqui
+        $user = get_user_by('email', $email);
+        if (!$user) {
                 // Se o usuário não existir, cria um novo.
                 $password = wp_generate_password(); // Gera uma senha.
                 $user_id = wp_create_user($username, $password, $email); // Cria o usuário.
@@ -149,17 +163,19 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
                 $hotmart_woocommerce->wc_custom_process_order_for_existing_user($user->ID, $product_name);
                 $hotmart_emails = new Hotmart_Emails();
                 $hotmart_emails->send_product_available_email($user->user_email, $user->first_name, $product_name); // Envia um e-mail informando que o produto está disponível.
-            }
-        } else {
-            // Se o status da venda for desconhecido, registra o erro e responde com falha.
-            hotmart_log_error('Evento desconhecido: ' . $current_status);
-            return new WP_REST_Response(array('message' => 'Evento desconhecido'), 400);
         }
+    } else {
+        hotmart_log_error('Evento desconhecido: ' . $current_status);
+        return new WP_REST_Response(array('message' => 'Evento desconhecido'), 400);
+    }
+
+    // Verificação final do $order (movido para o final do método)
     if (is_wp_error($order)) {
         hotmart_log_error("Erro ao criar pedido durante o webhook: " . $order->get_error_message(), false, true);
         return new WP_REST_Response(array('message' => 'Failed to create order'), 500);
     }
-        // Se tudo ocorrer bem, responde com sucesso.
-        return new WP_REST_Response(array('success' => true, 'message' => 'Processed successfully!'), 200);
-    }
+
+    // Se tudo ocorrer bem, responde com sucesso.
+    return new WP_REST_Response(array('success' => true, 'message' => 'Processed successfully!'), 200);
+    } 
 }
