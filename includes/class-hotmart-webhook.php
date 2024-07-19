@@ -119,7 +119,7 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
         $current_status = $data->event; 
         $transaction_id = $data->purchase->transaction; 
 
-        if ($current_status == "PURCHASE_PROTEST" || $current_status == "PURCHASE_CHARGEBACK") {
+        if ($current_status == "PURCHASE_REFUNDED" || $current_status == "PURCHASE_CHARGEBACK") {
             wc_custom_refund_order_by_transaction_id($transaction_id); // Processa o reembolso com base no número da transação.
 
           
