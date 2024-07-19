@@ -45,21 +45,19 @@ class Hotmart_Webhook {
             return new WP_REST_Response(array('message' => 'No data provided'), 400);
         }
 
-    // Obtém o hottok da query string da URL, do corpo ou do cabeçalho
-    $hottok_recebido = $request->get_param('hottok');
+    // Validação do hottok (corrigido)
+    $hottok_recebido = $request->get_header('X-Hotmart-Hottok'); 
+
+    // Se não encontrar no cabeçalho, procura no corpo da requisição
     if (!$hottok_recebido) {
         $data = $request->get_json_params();
-        $hottok_recebido = isset($data['hottok']) ? $data['hottok'] : $request->get_header('hottok');
+        $hottok_recebido = isset($data['hottok']) ? $data['hottok'] : null;
     }
 
-        // Seu hottok real (substitua pelo seu hottok)
-        $hottok_esperado = HOTMART_WEBHOOK_TOKEN; // Obtém o hottok do arquivo de configuração
-
-        // Compara o hottok recebido com o esperado
-        if ($hottok_recebido !== $hottok_esperado) {
-            hotmart_log_error('Hottok inválido: ' . $hottok_recebido);
-            return new WP_REST_Response(array('message' => 'Hottok inválido'), 403); // Retorna erro 403 Forbidden
-        }
+    if (!$hottok_recebido || $hottok_recebido !== HOTMART_WEBHOOK_TOKEN) {
+        hotmart_log_error('Hottok inválido ou ausente: ' . $hottok_recebido);
+        return new WP_REST_Response(array('message' => 'Acesso não autorizado: hottok inválido ou ausente'), 403);
+    }
 
         // Definindo as variáveis $transactionId e $userDetails
         $transactionId = $data["purchase"]["transaction"];
