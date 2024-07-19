@@ -120,12 +120,10 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
         $transaction_id = $data->purchase->transaction; 
 
         if ($current_status == "PURCHASE_REFUNDED" || $current_status == "PURCHASE_CHARGEBACK") {
-            wc_custom_refund_order_by_transaction_id($transaction_id); // Processa o reembolso com base no número da transação.
-
-          
-        } elseif ($current_status == "PURCHASE_APPROVED") {
-            $user = get_user_by('email', $email); // Obtém o usuário pelo e-mail.
-            if (!$user) {
+    wc_custom_refund_order_by_transaction_id($webhookData->purchase->transaction); // Corrigido
+} elseif ($current_status == "PURCHASE_APPROVED") {
+    $user = get_user_by('email', $email); // Obtém o usuário pelo e-mail.
+    if (!$user) {
                 // Se o usuário não existir, cria um novo.
                 $password = wp_generate_password(); // Gera uma senha.
                 $user_id = wp_create_user($username, $password, $email); // Cria o usuário.
@@ -139,11 +137,11 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
                 $hotmart_emails = new Hotmart_Emails();
                 $hotmart_emails->send_welcome_email($email, $first_name, $password); // Envia um e-mail de boas-vindas ao novo usuário.
                 $hotmart_woocommerce = new Hotmart_WooCommerce();
-                $order = $hotmart_woocommerce->wc_custom_create_order_hotmart(array('status' => 'completed', 'customer_id' => $user_id), $first_name, $email, $product_name, $transaction_id); // Cria um pedido para o novo usuário.
-    if (is_wp_error($order)) {
-        hotmart_log_error("Erro ao criar pedido durante o webhook: " . $order->get_error_message(), false, true);
-        return new WP_REST_Response(array('message' => 'Failed to create order'), 500);
-    }
+        $order = $hotmart_woocommerce->wc_custom_create_order_hotmart(array('status' => 'completed', 'customer_id' => $user_id), $first_name, $email, $product_name, $webhookData->purchase->transaction); // Corrigido
+        if (is_wp_error($order)) {
+            hotmart_log_error("Erro ao criar pedido durante o webhook: " . $order->get_error_message(), false, true);
+            return new WP_REST_Response(array('message' => 'Failed to create order'), 500);
+        }
 
             } else {
                 // Se o usuário já existir, processa o pedido para o usuário existente.
