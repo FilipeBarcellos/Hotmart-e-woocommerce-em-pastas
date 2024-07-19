@@ -120,7 +120,7 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
         $transaction_id = $data->purchase->transaction; 
 
         if ($current_status == "PURCHASE_REFUNDED" || $current_status == "PURCHASE_CHARGEBACK") {
-    wc_custom_refund_order_by_transaction_id($webhookData->purchase->transaction); // Corrigido
+    wc_custom_refund_order_by_id_da_transacao($webhookData->purchase->transaction); // Corrigido
 } elseif ($current_status == "PURCHASE_APPROVED") {
     $user = get_user_by('email', $email); // Obtém o usuário pelo e-mail.
     if (!$user) {
