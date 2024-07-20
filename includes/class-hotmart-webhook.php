@@ -163,11 +163,6 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
         return new WP_REST_Response(array('message' => 'Evento desconhecido'), 400);
     }
 
-    // Verificação final do $order (movido para o final do método)
-    if (is_wp_error($order)) {
-        hotmart_log_error("Erro ao criar pedido durante o webhook: " . $order->get_error_message(), false, true);
-        return new WP_REST_Response(array('message' => 'Failed to create order'), 500);
-    }
 
     // Se tudo ocorrer bem, responde com sucesso.
     return new WP_REST_Response(array('success' => true, 'message' => 'Processed successfully!'), 200);
