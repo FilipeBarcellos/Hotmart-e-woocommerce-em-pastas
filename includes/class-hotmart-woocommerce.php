@@ -27,7 +27,7 @@ class Hotmart_WooCommerce {
         $product = get_page_by_title($product_name, OBJECT, 'product');
         if (!$product) {
             $error_message = "Product not found: " . $product_name;
-            hotmart_log_error($error_message, false, true); // Marca como erro crítico
+            hotmart_log_error($error_message, $data, false, true); // Marca como erro crítico
             return new WP_Error('product_not_found', 'Produto da Hotmart não encontrado no WooCommerce', $error_message);
         }
 
@@ -41,7 +41,7 @@ class Hotmart_WooCommerce {
         // Adiciona o produto encontrado ao pedido
     if (!$order->add_product(wc_get_product($product->ID), 1)) {
         $error_message = "Error adding product to order: " . $product_name;
-        hotmart_log_error($error_message, false, true);
+        hotmart_log_error($error_message, $data, false, true);
         return new WP_Error('error_adding_product', $error_message);
     }
 
@@ -51,7 +51,7 @@ class Hotmart_WooCommerce {
         $order->calculate_totals();
         if (!$order->update_status("completed", '[Compra pela hotmart]')) {
             $error_message = "Error updating order status for order ID: " . $order->get_id();
-            hotmart_log_error($error_message, false, true);
+            hotmart_log_error($error_message, $data, false, true);
             return new WP_Error('error_updating_status', $error_message);
         }
 
@@ -74,7 +74,7 @@ class Hotmart_WooCommerce {
         $product = get_page_by_title($product_name, OBJECT, 'product');
         if (!$product) {
             $error_message = "Product not found for existing user: " . $product_name;
-            hotmart_log_error($error_message, false, true);
+            hotmart_log_error($error_message, $data, false, true);
             return new WP_Error('product_not_found', $error_message);
         }
 
@@ -96,7 +96,7 @@ class Hotmart_WooCommerce {
         // Adiciona o produto ao pedido
         if (!$order->add_product(wc_get_product($product->ID), 1)) {
             $error_message = "Error adding product to order for existing user: " . $product_name;
-            hotmart_log_error($error_message, false, true);
+            hotmart_log_error($error_message, $data, false, true);
             return new WP_Error('error_adding_product', $error_message);
         }
 
@@ -105,7 +105,7 @@ class Hotmart_WooCommerce {
         $order->calculate_totals();
         if (!$order->update_status('completed', 'Pedido completado automaticamente para usuário existente.', TRUE)) {
             $error_message = "Error updating order status for existing user: " . $user_id;
-            hotmart_log_error($error_message, false, true);
+            hotmart_log_error($error_message, $data, false, true);
             return new WP_Error('error_updating_status', $error_message);
         }
 
