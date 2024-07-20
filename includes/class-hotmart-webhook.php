@@ -77,13 +77,13 @@ public function hotmart_webhook_callback(WP_REST_Request $request) {
 
     // Retorna erro se houver campos ausentes
     if (!empty($missing_keys)) {
-        $error_message = "Missing data: " . implode(', ', $missing_keys);
+        $error_message = "Faltando-Dados: " . implode(', ', $missing_keys);
         hotmart_log_error($error_message);
         return new WP_REST_Response(array('message' => $error_message), 400);
     }
 
     // Extração dos dados do webhook (após a verificação dos campos obrigatórios)
-    $buyer_name = isset($webhookData->buyer->name) ? sanitize_text_field($webhookData->buyer->name) : "Comprador não informado";
+    $buyer_name = isset($webhookData->buyer->name) ? sanitize_text_field($webhookData->buyer->name) : "Comprador-nao-informado";
     $email = sanitize_email($webhookData->buyer->email);
     $product_name = sanitize_text_field($webhookData->product->name); // Corrigido
     $event = $data->event;
@@ -92,8 +92,8 @@ public function hotmart_webhook_callback(WP_REST_Request $request) {
     // Sanitiza e valida o nome completo do cliente (corrigido)
     $full_name = sanitize_text_field($webhookData->buyer->name);
     if (empty($full_name)) {
-        hotmart_log_error('Full name is empty.');
-        return new WP_REST_Response(array('message' => 'Full name is empty'), 400);
+        hotmart_log_error('nome-completo-vazio.');
+        return new WP_REST_Response(array('message' => 'nome-completo-vazio'), 400);
     }
     list($first_name, $last_name) = hotmart_split_full_name($full_name);
     $username = str_replace(' ', '', strtolower($full_name));
@@ -131,13 +131,22 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
         }
     } elseif ($current_status == "PURCHASE_APPROVED") {
         $user = get_user_by('email', $email);
-        if (!$user) {
+
+    // Verifica se o produto existe ANTES de criar o usuário
+    $product = get_page_by_title($product_name, OBJECT, 'product');
+    if (!$product) {
+        $error_message = "Produto-nao-encontrado: " . $product_name;
+        hotmart_log_error($error_message, false, true);
+        return new WP_REST_Response($error_message, 400); // Retorna a mensagem de erro diretamente
+    } 
+      
+      if (!$user) {
                 // Se o usuário não existir, cria um novo.
                 $password = wp_generate_password(); // Gera uma senha.
                 $user_id = wp_create_user($username, $password, $email); // Cria o usuário.
                 if (is_wp_error($user_id)) {
-        hotmart_log_error("Error creating user: " . $user_id->get_error_message());
-        return new WP_REST_Response(array('message' => 'Failed to create user'), 500);
+        hotmart_log_error("Erro ao criar usuário: " . $user_id->get_error_message());
+        return new WP_REST_Response(array('message' => 'Falha ao criar usuario'), 400);
     }
 
                 // Atualiza os dados do usuário com informações fornecidas.
@@ -148,7 +157,7 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
         $order = $hotmart_woocommerce->wc_custom_create_order_hotmart(array('status' => 'completed', 'customer_id' => $user_id), $first_name, $email, $product_name, $webhookData->purchase->transaction); // Corrigido
         if (is_wp_error($order)) {
             hotmart_log_error("Erro ao criar pedido durante o webhook: " . $order->get_error_message(), false, true);
-            return new WP_REST_Response(array('message' => 'Failed to create order'), 500);
+            return new WP_REST_Response(array('message' => 'Falha ao criar ordem'), 400);
         }
 
             } else {
@@ -165,6 +174,6 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
 
 
     // Se tudo ocorrer bem, responde com sucesso.
-    return new WP_REST_Response(array('success' => true, 'message' => 'Processed successfully!'), 200);
+    return new WP_REST_Response(array('success' => true, 'message' => 'Foi um sucesso cabra!'), 200);
     } 
 }
