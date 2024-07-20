@@ -127,7 +127,12 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
     if ($current_status == "PURCHASE_REFUNDED" || $current_status == "PURCHASE_CHARGEBACK") {
         if ($transaction_id) {
             $hotmart_woocommerce = new Hotmart_WooCommerce();
-            $hotmart_woocommerce->wc_custom_refund_order_by_transaction_id($transaction_id); // Passa apenas o ID da transação
+            $result = $hotmart_woocommerce->wc_custom_refund_order_by_transaction_id($transaction_id); // Armazena o resultado da função
+
+            if (is_wp_error($result)) { // Verifica se houve erro
+                hotmart_log_error("Erro ao processar reembolso/chargeback: " . $result->get_error_message(), $data);
+                return new WP_REST_Response(array('message' => $result->get_error_message()), 500); // Retorna erro 500 com a mensagem de erro
+            }
         }
     } elseif ($current_status == "PURCHASE_APPROVED") {
         $user = get_user_by('email', $email);
@@ -136,7 +141,7 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
     $product = get_page_by_title($product_name, OBJECT, 'product');
     if (!$product) {
         $error_message = "Produto-nao-encontrado: " . $product_name;
-        hotmart_log_error($error_message, $data, false, true);
+        hotmart_log_error($error_message, $data);
         return new WP_REST_Response($error_message, 400); // Retorna a mensagem de erro diretamente
     } 
       
@@ -160,20 +165,27 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
             return new WP_REST_Response(array('message' => 'Falha ao criar ordem'), 400);
         }
 
-            } else {
-                // Se o usuário já existir, processa o pedido para o usuário existente.
-                $hotmart_woocommerce = new Hotmart_WooCommerce();
-                $hotmart_woocommerce->wc_custom_process_order_for_existing_user($user->ID, $product_name);
-                $hotmart_emails = new Hotmart_Emails();
-                $hotmart_emails->send_product_available_email($user->user_email, $user->first_name, $product_name); // Envia um e-mail informando que o produto está disponível.
-        }
     } else {
-        hotmart_log_error('Evento desconhecido: ' . $current_status);
-        return new WP_REST_Response(array('message' => 'Evento desconhecido'), 400);
+        // Se o usuário já existir, processa o pedido para o usuário existente.
+        $hotmart_woocommerce = new Hotmart_WooCommerce();
+        $order = $hotmart_woocommerce->wc_custom_process_order_for_existing_user($user->ID, $product_name, $transaction_id); // Armazena o retorno da função em $order
+        $hotmart_emails = new Hotmart_Emails();
+
+        if ($order && !is_wp_error($order)) { // Verifica se $order é válido e não é um WP_Error
+            // Armazena o número da transação da hotmart como metadado do pedido
+            $order->update_meta_data('hotmart_transaction_id', $transaction_id);
+            $order->save();
+            $hotmart_emails->send_product_available_email($user->user_email, $user->first_name, $product_name); // Envia um e-mail informando que o produto está disponível.
+        } else {
+            // Lida com o erro caso a criação do pedido tenha falhado
+            hotmart_log_error("Erro ao criar pedido para usuário existente: " . $order->get_error_message(), $data);
+            return new WP_REST_Response(array('message' => 'Falha ao processar pedido para usuário existente'), 500);
+        }
     }
 
 
     // Se tudo ocorrer bem, responde com sucesso.
     return new WP_REST_Response(array('success' => true, 'message' => 'Foi-um-sucesso-cabra!'), 200);
     } 
+}
 }
