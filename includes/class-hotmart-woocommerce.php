@@ -88,19 +88,26 @@ class Hotmart_WooCommerce {
                 'Email' => $user_info->user_email,
                 'Name' => $user_info->display_name
                 // Outras informações que você achar relevantes
+              
             ];
             hotmart_log_error("Error creating order for existing user: " . $order->get_error_message(), false, true, $user_details);
             return $order;
         }
       
-        // Adiciona o produto ao pedido
-        if (!$order->add_product(wc_get_product($product->ID), 1)) {
-            $error_message = "Error adding product to order for existing user: " . $product_name;
-            hotmart_log_error($error_message, $data, false, true);
-            return new WP_Error('error_adding_product', $error_message);
-        }
 
-        // Define o ID do cliente, calcula os totais e atualiza o status
+      
+    // Adiciona o produto ao pedido
+    if (!$order->add_product(wc_get_product($product->ID), 1)) {
+        $error_message = "Error adding product to order for existing user: " . $product_name;
+        hotmart_log_error($error_message, $data, false, true);
+        return new WP_Error('error_adding_product', $error_message);
+    }
+
+          // Armazena o número da transação da hotmart como metadado do pedido 
+    $order->update_meta_data('hotmart_transaction_id', $transaction_id); // Agora $transaction_id está definido
+    $order->save();       
+      
+              // Define o ID do cliente, calcula os totais e atualiza o status
         $order->set_customer_id($user_id);
         $order->calculate_totals();
         if (!$order->update_status('completed', 'Pedido completado automaticamente para usuário existente.', TRUE)) {
@@ -108,7 +115,9 @@ class Hotmart_WooCommerce {
             hotmart_log_error($error_message, $data, false, true);
             return new WP_Error('error_updating_status', $error_message);
         }
+      
 
+      
         return $order;
     }
 
@@ -117,7 +126,7 @@ class Hotmart_WooCommerce {
      *
      * @param string $transaction_id Número da transação da Hotmart.
      */
-public function wc_custom_refund_order_by_transaction_id($transaction_id) {
+public function wc_custom_refund_order_by_transaction_id($transaction_id, $data = array()) {
     $orders = wc_get_orders(array(
         'meta_key' => 'hotmart_transaction_id',
         'meta_value' => $transaction_id,
@@ -130,8 +139,11 @@ public function wc_custom_refund_order_by_transaction_id($transaction_id) {
             $order->update_status('cancelled', 'Pedido cancelado devido a reembolso.', true);
             // (Outras ações de reembolso, como estorno de pagamento, se necessário)
         }
+
+        return true; // Retorna true para indicar sucesso
     } else {
-        hotmart_log_error("Nenhum pedido encontrado para o ID da transação: " . $transaction_id);
-        }
+        hotmart_log_error("Nenhum pedido encontrado para o ID da transação: " . $transaction_id, $data);
+        return new \WP_Error('order_not_found', sprintf('Nenhum-pedido-encontrado-para-o-ID-da-transacao: %s', $transaction_id));
     }
+}
 }
