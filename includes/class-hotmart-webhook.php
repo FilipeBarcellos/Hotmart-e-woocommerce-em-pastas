@@ -174,6 +174,6 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
 
 
     // Se tudo ocorrer bem, responde com sucesso.
-    return new WP_REST_Response(array('success' => true, 'message' => 'Foi um sucesso cabra!'), 200);
+    return new WP_REST_Response(array('success' => true, 'message' => 'Foi-um-sucesso-cabra!'), 200);
     } 
 }
