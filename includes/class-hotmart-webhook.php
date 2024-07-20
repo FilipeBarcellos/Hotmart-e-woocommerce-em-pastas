@@ -78,7 +78,7 @@ public function hotmart_webhook_callback(WP_REST_Request $request) {
     // Retorna erro se houver campos ausentes
     if (!empty($missing_keys)) {
         $error_message = "Faltando-Dados: " . implode(', ', $missing_keys);
-        hotmart_log_error($error_message);
+        hotmart_log_error($error_message, $data);
         return new WP_REST_Response(array('message' => $error_message), 400);
     }
 
@@ -136,7 +136,7 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
     $product = get_page_by_title($product_name, OBJECT, 'product');
     if (!$product) {
         $error_message = "Produto-nao-encontrado: " . $product_name;
-        hotmart_log_error($error_message, false, true);
+        hotmart_log_error($error_message, $data, false, true);
         return new WP_REST_Response($error_message, 400); // Retorna a mensagem de erro diretamente
     } 
       
