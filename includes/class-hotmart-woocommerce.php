@@ -117,22 +117,21 @@ class Hotmart_WooCommerce {
      *
      * @param string $transaction_id Número da transação da Hotmart.
      */
-    public function wc_custom_refund_order_by_id_da_transacao($transaction_id) {
-        // Procura por pedidos que contenham o metadado 'hotmart_transaction_id' igual ao $transaction_id.
-        $orders = wc_get_orders(array(
-            'meta_key' => 'hotmart_transaction_id',
-            'meta_value' => $transaction_id,
-            'status' => array('wc-completed', 'wc-processing'),
-        ));
+public function wc_custom_refund_order_by_transaction_id($transaction_id) {
+    $orders = wc_get_orders(array(
+        'meta_key' => 'hotmart_transaction_id',
+        'meta_value' => $transaction_id,
+        'status' => array('wc-completed', 'wc-processing'),
+    ));
 
-        if (empty($orders)) {
-            hotmart_log_error("No orders found for transaction ID: " . $transaction_id, false, true); // Marca como erro crítico
-            return;
-        }
-
+    if (!empty($orders)) {
         foreach ($orders as $order) {
-            // Processa o reembolso para o pedido encontrado.
-            $order->update_status('wc-refunded', 'Pedido reembolsado automaticamente devido a chargeback ou reembolso.');
+            // Processa o reembolso
+            $order->update_status('cancelled', 'Pedido cancelado devido a reembolso.', true);
+            // (Outras ações de reembolso, como estorno de pagamento, se necessário)
+        }
+    } else {
+        hotmart_log_error("Nenhum pedido encontrado para o ID da transação: " . $transaction_id);
         }
     }
 }
