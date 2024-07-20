@@ -125,17 +125,11 @@ $product_name = sanitize_text_field($webhookData->product->name); // Sanitiza o 
     }
 
     if ($current_status == "PURCHASE_REFUNDED" || $current_status == "PURCHASE_CHARGEBACK") {
-        if ($transaction_id) { 
-            $order = wc_get_order(hotmart_get_order_id_by_transaction_id($transaction_id));
-
-            if ($order) {
-                $hotmart_woocommerce = new Hotmart_WooCommerce();
-                $hotmart_woocommerce->wc_custom_refund_order_by_id_da_transacao($transaction_id); 
-            } else {
-                hotmart_log_error("Pedido não encontrado para o ID da transação: " . $transaction_id);
-            }
-        } 
-    } elseif ($current_status == "PURCHASE_APPROVED") { // if do elseif adicionado aqui
+        if ($transaction_id) {
+            $hotmart_woocommerce = new Hotmart_WooCommerce();
+            $hotmart_woocommerce->wc_custom_refund_order_by_transaction_id($transaction_id); // Passa apenas o ID da transação
+        }
+    } elseif ($current_status == "PURCHASE_APPROVED") {
         $user = get_user_by('email', $email);
         if (!$user) {
                 // Se o usuário não existir, cria um novo.
